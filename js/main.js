@@ -119,4 +119,39 @@ function init() {
   particles.position.y = 70;
   scene.add(particles);
 
+  function adjustToWeatherConditions() {
+    let cityIDs = '';
+    for (var i = 0; i < cities.length; i++) {
+      cityIDs += cities[i][1];
+      if (i != cities.length - 1) cityIDs += ',';
+    }
+    //refactor below, add url to var, maybe obfuscate the appid as well
+    getURL('http://api.openweathermap.org/data/2.5/group?id=' + cityIDs + '&APPID=kj34723jkh23kj89dfkh2b28ey982hwm223iuyhe2c', function(info) {
+      cityWeather = info.list;
+      lookupTimezones(0, cityWeather.length);
+    });
+  }
+  function lookupTimezones(t, len) {
+    var tz = new TimeZoneDB;
+
+    tz.getJSON({
+      key: "KH3KH239D1S",
+      lat: cityWeather[t].coord.lat,
+      lng: cityWeather[t].coord.lon
+    }, function(timeZone) {
+      cityTimes.push(new Date(timeZone.timestamp * 1000));
+
+      t++;
+
+      if (t < len) {
+        setTimeout(function() {
+          lookupTimezones(t, len);
+        }, 1200);
+      } else {
+        applyWeatherConditions();
+      }
+    });
+  }
+
+  
 }
